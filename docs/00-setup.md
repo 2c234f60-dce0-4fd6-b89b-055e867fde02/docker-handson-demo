@@ -1,79 +1,30 @@
-# 00: Development Environment
+# 00: 개발 환경 설정
 
-In this step, you're setting up development environment for the workshop.
+이 단계에서는 워크숍을 위한 개발 환경을 설정합니다.
 
-## Prerequisites
+## 전제 조건
 
-Refer to the [README](../README.md) doc for preparation.
+준비 사항에 대해서는 [README](../README.md) 문서를 참고하세요.
 
-## Getting Started
+## 시작하기
 
-- [Use GitHub Codespaces](#use-github-codespaces)
-- [Use Visual Studio Code](#use-visual-studio-code)
-  - [Install PowerShell 👉 For Windows Users](#install-powershell--for-windows-users)
-  - [Install git CLI](#install-git-cli)
-  - [Install GitHub CLI](#install-github-cli)
-  - [Install Docker Desktop](#install-docker-desktop)
-  - [Install Visual Studio Code](#install-visual-studio-code)
-  - [Start Visual Studio Code](#start-visual-studio-code)
-  - [Set-up MCP Servers](#set-up-mcp-servers)
-- [Check GitHub Copilot Agent Mode](#check-github-copilot-agent-mode)
-- [Configure Beast Mode](#configure-beast-mode)
-- [Prepare Custom Instructions](#prepare-custom-instructions)
-- [Analyze Product Requirements Document (PRD) and Design API](#analyze-product-requirements-document-prd-and-design-api)
+- [Visual Studio Code 사용하기](#visual-studio-code-사용하기)
+- [PowerShell 설치 👉 Windows 사용자용](#powershell-설치--windows-사용자용)
+- [git CLI 설치](#git-cli-설치)
+- [GitHub CLI 설치](#github-cli-설치)
+- [Docker Desktop 설치](#docker-desktop-설치)
+- [Visual Studio Code 설치](#visual-studio-code-설치)
+- [Visual Studio Code 시작하기](#visual-studio-code-시작하기)
+- [MCP 서버 설정하기](#mcp-서버-설정하기)
+- [GitHub Copilot Agent 모드 확인하기](#github-copilot-agent-모드-확인하기)
+- [Beast 모드 설정하기](#beast-모드-설정하기)
+- [사용자 지정 지침 준비하기](#사용자-지정-지침-준비하기)
 
-## Use GitHub Codespaces
+## Visual Studio Code 사용하기
 
-1. Click this link 👉 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/microsoft/github-copilot-vibe-coding-workshop)
+### PowerShell 설치 👉 Windows 사용자용
 
-1. Once the GitHub Codespace instance is ready, open a terminal and run the following command to check out everything you need has been properly installed or not.
-
-    ```bash
-    # Python
-    python --version
-    ```
-
-    ```bash
-    # Node.js
-    node --version
-    npm --version
-
-    ```
-
-    ```bash
-    # JDK
-    java --version
-    ```
-
-    ```bash
-    # .NET SDK
-    dotnet --list-sdks
-    ```
-
-1. Check out your repository status.
-
-    ```bash
-    git remote -v
-    ```
-
-   You should be able to see the following.
-
-    ```bash
-    origin  https://github.com/microsoft/github-copilot-vibe-coding-workshop.git (fetch)
-    origin  https://github.com/microsoft/github-copilot-vibe-coding-workshop.git (push)
-    ```
-
-   If you see something different from above, delete the GitHub Codespace instance and recreate it.
-
-1. Move down to the [Set-up MCP Servers](#set-up-mcp-servers) section.
-
-**👇👇👇 Instead, if you'd like to use VS Code on your local machine, follow the instruction below. The section below doesn't apply to those who use GitHub Codespaces. 👇👇👇**
-
-## Use Visual Studio Code
-
-### Install PowerShell 👉 For Windows Users
-
-1. Check whether you've already installed PowerShell or not.
+1. PowerShell이 이미 설치되어 있는지 확인하세요.
 
     ```bash
     # Bash/Zsh
@@ -85,19 +36,19 @@ Refer to the [README](../README.md) doc for preparation.
     Get-Command pwsh
     ```
 
-   If you don't see the command path of `pwsh`, it means you haven't installed PowerShell yet. Visit [PowerShell installation page](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) and follow the instructions.
+   `pwsh`의 명령어 경로가 보이지 않으면, PowerShell이 아직 설치되지 않았다는 의미입니다. [PowerShell 설치 페이지](https://learn.microsoft.com/powershell/scripting/install/installing-powershell)를 방문하여 지침을 따르세요.
 
-1. Check out the version of your PowerShell.
+1. PowerShell 버전을 확인하세요.
 
     ```bash
     pwsh --version
     ```
 
-   `7.5.0` or higher is recommended. If yours is lower than that, visit [PowerShell installation page](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) and follow the instructions.
+   `7.5.0` 이상을 권장합니다. 버전이 그보다 낮다면, [PowerShell 설치 페이지](https://learn.microsoft.com/powershell/scripting/install/installing-powershell)를 방문하여 지침을 따르세요.
 
-### Install git CLI
+### git CLI 설치
 
-1. Check whether you've already installed git CLI or not.
+1. git CLI가 이미 설치되어 있는지 확인하세요.
 
     ```bash
     # Bash/Zsh
@@ -109,19 +60,19 @@ Refer to the [README](../README.md) doc for preparation.
     Get-Command git
     ```
 
-   If you don't see the command path of `git`, it means you haven't installed the git CLI yet. Visit [git CLI installation page](https://git-scm.com/downloads) and follow the instructions.
+   `git`의 명령어 경로가 보이지 않으면, git CLI가 아직 설치되지 않았다는 의미입니다. [git CLI 설치 페이지](https://git-scm.com/downloads)를 방문하여 지침을 따르세요.
 
-1. Check out the version of your git CLI.
+1. git CLI 버전을 확인하세요.
 
     ```bash
     git --version
     ```
 
-   `2.39.0` or higher is recommended. If yours is lower than that, visit [git CLI installation page](https://git-scm.com/downloads) and follow the instructions.
+   `2.39.0` 이상을 권장합니다. 버전이 그보다 낮다면, [git CLI 설치 페이지](https://git-scm.com/downloads)를 방문하여 지침을 따르세요.
 
-### Install GitHub CLI
+### GitHub CLI 설치
 
-1. Check whether you've already installed GitHub CLI or not.
+1. GitHub CLI가 이미 설치되어 있는지 확인하세요.
 
     ```bash
     # Bash/Zsh
@@ -133,27 +84,27 @@ Refer to the [README](../README.md) doc for preparation.
     Get-Command gh
     ```
 
-   If you don't see the command path of `gh`, it means you haven't installed the GitHub CLI yet. Visit [GitHub CLI installation page](https://cli.github.com/) and follow the instructions.
+   `gh`의 명령어 경로가 보이지 않으면, GitHub CLI가 아직 설치되지 않았다는 의미입니다. [GitHub CLI 설치 페이지](https://cli.github.com/)를 방문하여 지침을 따르세요.
 
-1. Check out the version of your GitHub CLI.
+1. GitHub CLI 버전을 확인하세요.
 
     ```bash
     gh --version
     ```
 
-   `2.65.0` or higher is recommended. If yours is lower than that, visit [GitHub CLI installation page](https://cli.github.com/) and follow the instructions.
+   `2.65.0` 이상을 권장합니다. 버전이 그보다 낮다면, [GitHub CLI 설치 페이지](https://cli.github.com/)를 방문하여 지침을 따르세요.
 
-1. Check whether you've signed into GitHub or not.
+1. GitHub에 로그인되어 있는지 확인하세요.
 
     ```bash
     gh auth status
     ```
 
-   If you haven't signed in yet, run `gh auth login` and sign-in.
+   아직 로그인하지 않았다면, `gh auth login`을 실행하여 로그인하세요.
 
-### Install Docker Desktop
+### Docker Desktop 설치
 
-1. Check whether you've already installed Docker Desktop or not.
+1. Docker Desktop이 이미 설치되어 있는지 확인하세요.
 
     ```bash
     # Bash/Zsh
@@ -165,19 +116,19 @@ Refer to the [README](../README.md) doc for preparation.
     Get-Command docker
     ```
 
-   If you don't see the command path of `docker`, it means you haven't installed Docker Desktop yet. Visit [Docker Desktop installation page](https://docs.docker.com/get-started/introduction/get-docker-desktop/) and follow the instructions.
+   `docker`의 명령어 경로가 보이지 않으면, Docker Desktop이 아직 설치되지 않았다는 의미입니다. [Docker Desktop 설치 페이지](https://docs.docker.com/get-started/introduction/get-docker-desktop/)를 방문하여 지침을 따르세요.
 
-1. Check out the version of your Docker CLI.
+1. Docker CLI 버전을 확인하세요.
 
     ```bash
     docker --version
     ```
 
-   `28.0.4` or higher is recommended. If yours is lower than that, visit [Docker Desktop installation page](https://docs.docker.com/get-started/introduction/get-docker-desktop/) and follow the instructions.
+   `28.0.4` 이상을 권장합니다. 버전이 그보다 낮다면, [Docker Desktop 설치 페이지](https://docs.docker.com/get-started/introduction/get-docker-desktop/)를 방문하여 지침을 따르세요.
 
-### Install Visual Studio Code
+### Visual Studio Code 설치
 
-1. Check whether you've already installed VS Code or not.
+1. VS Code가 이미 설치되어 있는지 확인하세요.
 
     ```bash
     # Bash/Zsh
@@ -189,55 +140,55 @@ Refer to the [README](../README.md) doc for preparation.
     Get-Command code
     ```
 
-   If you don't see the command path of `code`, it means you haven't installed VS Code yet. Visit [Visual Studio Code installation page](https://code.visualstudio.com/) and follow the instructions.
+   `code`의 명령어 경로가 보이지 않으면, VS Code가 아직 설치되지 않았다는 의미입니다. [Visual Studio Code 설치 페이지](https://code.visualstudio.com/)를 방문하여 지침을 따르세요.
 
-1. Check out the version of your VS Code.
+1. VS Code 버전을 확인하세요.
 
     ```bash
     code --version
     ```
 
-   `1.99.0` or higher is recommended. If yours is lower than that, visit [Visual Studio Code installation page](https://code.visualstudio.com/) and follow the instructions.
+   `1.99.0` 이상을 권장합니다. 버전이 그보다 낮다면, [Visual Studio Code 설치 페이지](https://code.visualstudio.com/)를 방문하여 지침을 따르세요.
 
-   > **NOTE**: You might not be able to execute the `code` command. In this case, follow [this document](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line) for setup.
+   > **참고**: `code` 명령을 실행할 수 없을 수도 있습니다. 이 경우 설정을 위해 [이 문서](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line)를 따르세요.
 
-### Start Visual Studio Code
+### Visual Studio Code 시작하기
 
-1. Create a working directory.
-1. Run the command to fork this repo and clone it to your local machine.
-
-    ```bash
-    gh repo fork microsoft/github-copilot-vibe-coding-workshop --clone
-    ```
-
-1. Navigate into the cloned directory.
+1. 작업 디렉터리를 생성하세요.
+1. 이 저장소를 포크하고 로컬 머신에 클론합니다.
 
     ```bash
-    cd github-copilot-vibe-coding-workshop
+    gh repo fork 2c234f60-dce0-4fd6-b89b-055e867fde02/docker-handson-demo --clone
     ```
 
-1. Run VS Code from the terminal.
+1. 클론된 디렉터리로 이동하세요.
+
+    ```bash
+    cd docker-handson-demo
+    ```
+
+1. 터미널에서 VS Code를 실행하세요.
 
     ```bash
     code .
     ```
 
-1. Open a new terminal within VS Code and run the following command to check out your repository status.
+1. VS Code 내에서 새 터미널을 열고 다음 명령을 실행하여 저장소 상태를 확인하세요.
 
     ```bash
     git remote -v
     ```
 
-   You should be able to see the following. If you see `microsoft` in `origin`, you should clone it again from your forked repository.
+   다음과 같이 표시되어야 합니다. `origin`에 `2c234f60-dce0-4fd6-b89b-055e867fde02`가 보이면, 포크된 저장소에서 다시 클론해야 합니다.
 
     ```bash
-    origin  https://github.com/<your GitHub ID>/github-copilot-vibe-coding-workshop.git (fetch)
-    origin  https://github.com/<your GitHub ID>/github-copilot-vibe-coding-workshop.git (push)
-    upstream        https://github.com/microsoft/github-copilot-vibe-coding-workshop.git (fetch)
-    upstream        https://github.com/microsoft/github-copilot-vibe-coding-workshop.git (push)
+    origin  https://github.com/<your GitHub ID>/docker-handson-demo (fetch)
+    origin  https://github.com/<your GitHub ID>/docker-handson-demo (push)
+    upstream        https://github.com/2c234f60-dce0-4fd6-b89b-055e867fde02/docker-handson-demo.git (fetch)
+    upstream        https://github.com/2c234f60-dce0-4fd6-b89b-055e867fde02/docker-handson-demo.git (push)
     ```
 
-1. Check out whether both extensions have been installed or not &ndash; [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) and [GitHub Copilot Chat](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat).
+1. 다음 확장 프로그램이 설치되어 있는지 확인하세요 — [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)과 [GitHub Copilot Chat](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat).
 
     ```bash
     # Bash/Zsh
@@ -249,16 +200,16 @@ Refer to the [README](../README.md) doc for preparation.
     code --list-extensions | Select-String "github.copilot"
     ```
 
-   If you see nothing, it means you haven't installed those extensions yet. Run the following command to install the extensions.
+   아무것도 보이지 않으면, 해당 확장 프로그램이 아직 설치되지 않았다는 의미입니다. 다음 명령을 실행하여 확장 프로그램을 설치하세요.
 
     ```bash
     code --install-extension "github.copilot" --force && code --install-extension "github.copilot-chat" --force
     ```
 
-### Set-up MCP Servers
+### MCP 서버 설정하기
 
-1. Make sure Docker Desktop is up and running if you use VS Code on your local machine.
-1. Set the environment variable of `$REPOSITORY_ROOT`.
+1. 로컬 머신에서 VS Code를 사용한다면 Docker Desktop이 실행 중인지 확인하세요.
+1. `$REPOSITORY_ROOT` 환경 변수를 설정하세요.
 
    ```bash
    # bash/zsh
@@ -270,7 +221,7 @@ Refer to the [README](../README.md) doc for preparation.
    $REPOSITORY_ROOT = git rev-parse --show-toplevel
    ```
 
-1. Copy MCP server settings.
+1. MCP 서버 설정을 복사하세요.
 
     ```bash
     # bash/zsh
@@ -284,32 +235,32 @@ Refer to the [README](../README.md) doc for preparation.
               -Destination $REPOSITORY_ROOT/.vscode/ -Recurse -Force
     ```
 
-1. Open Command Palette by typing F1 or `Ctrl`+`Shift`+`P` on Windows or `Cmd`+`Shift`+`P` on Mac OS, and search `MCP: List Servers`.
-1. Choose `context7` then click `Start Server`.
-1. Choose `awesome-copilot` then click `Start Server`.
+1. F1 키를 누르거나 Windows에서는 `Ctrl`+`Shift`+`P`, Mac OS에서는 `Cmd`+`Shift`+`P`를 눌러 명령 팔레트를 열고, `MCP: List Servers`를 검색하세요.
+1. `context7`을 선택한 다음 `Start Server`를 클릭하세요.
+1. `awesome-copilot`을 선택한 다음 `Start Server`를 클릭하세요.
 
-## Check GitHub Copilot Agent Mode
+## GitHub Copilot Agent 모드 확인하기
 
-1. Click the GitHub Copilot icon on the top of GitHub Codespace or VS Code and open GitHub Copilot window.
+1. GitHub Codespace 또는 VS Code 상단에 있는 GitHub Copilot 아이콘을 클릭하여 GitHub Copilot 창을 열어주세요.
 
    ![Open GitHub Copilot Chat](./images/setup-02.png)
 
-1. If you're asked to login or sign up, do it. It's free of charge.
-1. Make sure you're using GitHub Copilot Agent Mode.
+1. 로그인이나 가입을 하라고 나오면 진행하세요. 무료입니다!
+1. GitHub Copilot Agent 모드를 사용하고 있는지 확인하세요.
 
    ![GitHub Copilot Agent Mode](./images/setup-03.png)
 
-1. Select model to either `GPT-4.1` or `Claude Sonnet 4`.
+1. 모델을 `GPT-4.1` 또는 `Claude Sonnet 4` 중 하나로 선택하세요.
 
-## Configure Beast Mode
+## Beast 모드 설정하기
 
-1. Enter the `/mcp.awesome-copilot.get_search_prompt`, followed by entering keywords like "beast mode"
+1. `/mcp.awesome-copilot.get_search_prompt`를 입력한 다음 "beast mode"와 같은 키워드를 입력하세요.
 
-   It should show list of beast chatmodes. Enter a prompt similar to `4.1 Beast Chat Mode`. Then it will save it under the `.github/chatmodes` directory.
+   Beast 챗모드 목록이 표시될 것입니다. `4.1 Beast Chat Mode`와 비슷한 프롬프트를 입력하세요. 그러면 `.github/chatmodes` 디렉터리에 저장됩니다.
 
-1. Choose the `4.1-Beast` mode instead of the `Agent` mode. It will automatically change LLM to `GPT 4.1`.
+1. `Agent` 모드 대신 `4.1-Beast` 모드를 선택하세요. 자동으로 LLM이 `GPT 4.1`로 변경됩니다.
 
-1. Set the environment variable of `$REPOSITORY_ROOT`.
+1. `$REPOSITORY_ROOT` 환경 변수를 설정하세요.
 
    ```bash
    # bash/zsh
@@ -321,7 +272,7 @@ Refer to the [README](../README.md) doc for preparation.
    $REPOSITORY_ROOT = git rev-parse --show-toplevel
    ```
 
-1. Copy workspace settings.
+1. 워크스페이스 설정을 복사하세요.
 
     ```bash
     # bash/zsh
@@ -335,9 +286,9 @@ Refer to the [README](../README.md) doc for preparation.
               -Destination $REPOSITORY_ROOT/.vscode/settings.json -Force
     ```
 
-## Prepare Custom Instructions
+## 사용자 지정 지침 준비하기
 
-1. Set the environment variable of `$REPOSITORY_ROOT`.
+1. `$REPOSITORY_ROOT` 환경 변수를 설정하세요.
 
    ```bash
    # bash/zsh
@@ -349,7 +300,7 @@ Refer to the [README](../README.md) doc for preparation.
    $REPOSITORY_ROOT = git rev-parse --show-toplevel
    ```
 
-1. Copy custom instructions.
+1. 사용자 지정 지침을 복사하세요.
 
     ```bash
     # bash/zsh
@@ -363,25 +314,10 @@ Refer to the [README](../README.md) doc for preparation.
               -Destination $REPOSITORY_ROOT/.github/ -Recurse -Force
     ```
 
-## Analyze Product Requirements Document (PRD) and Design API
-
-1. Make sure that you're using GitHub Copilot Agent Mode with the model of `Claude Sonnet 4` or `GPT-4.1`.
-1. Add [`product-requirements.md`](../product-requirements.md) to GitHub Copilot.
-1. Enter the prompt like the following for GitHub Copilot Agent to generate an OpenAPI document for you. This OpenAPI document will be the base of your entire application.
-
-    ```text
-    Here's the PRD for you. Carefully read through the entire PRD and do the following for me.
-    
-    - Identify all the steps first, which you're going to do.
-    - Generate an OpenAPI document in YAML format.
-    - The OpenAPI document should capture all API endpoints, parameters and request/response payloads.
-    - Assume the API server is `http://localhost:8080` and the base URL is `/api`.
-    - Save it to the `openapi.yaml` file at the repository root.
-    ```
-
-1. Verify the `openapi.yaml` is generated at the repository root.
-1. Click the `[keep]` button of GitHub Copilot to take the `openapi.yaml` file.
-
 ---
 
-OK. You've completed the "Development Environment" step. Let's move onto [STEP 01: Python Backend Development](./01-python.md).
+좋습니다. "개발 환경 설정" 단계를 완료했습니다. 이제 [5단계: 컨테이너화](./05-containerization.md)로 이동하세요.
+
+> 원본 데모에서는 현재 단계에서 요구사항명세를 기준으로 openapi라는 백엔드 설계문서를 만듭니다.\
+> 그 다음 Python 백엔드, JS 프론트, 백엔드 Java로 마이그레이션, 프론트 .Net으로 마이그레이션을 수행합니다.\
+> 해당 단계는 시간적 제약으로 모두 생략합니다.
