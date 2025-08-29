@@ -108,28 +108,35 @@ Refer to the [README](../README.md) doc for preparation.
 
 ### Containerize .NET Application
 
+
+### Containerize JavaScript Frontend Application
+
 1. Make sure that you're using GitHub Copilot Agent Mode with the model of `Claude Sonnet 4` or `GPT-4.1`.
-1. Use prompt like below to build a container image for the .NET app.
+2. Use the following prompt to build a container image for the JavaScript frontend app:
 
     ```text
-    I'd like to build a container image of a .NET app. Follow the instructions below.
+    I'd like to build a container image of a JavaScript frontend app. Follow the instructions below.
 
     - Identify all the steps first, which you're going to do.
-    - The .NET app is located at `dotnet`.
+    - The frontend app is located at `complete/frontend`.
     - Your working directory is the repository root.
-    - Create a Dockerfile, `Dockerfile.dotnet`.
-    - Use .NET 9.
+    - Create a Dockerfile named `Dockerfile` in the frontend directory.
+    - Use Node.js 16-alpine for the build stage.
+    - Use nginx:stable-alpine for the production stage.
     - Use multi-stage build approach.
-    - Use the target port number of `8080` for the container image.
-    - Add the environment variable, `ApiSettings__BaseUrl` to the container. It should point to the Java app, `http://localhost:8080/api`.
+    - Build the app using `npm ci` and `npm run build`.
+    - Serve the built files with Nginx.
+    - Expose port `80` for the container image.
+    - Copy and use the custom `nginx.conf` for routing and API proxy.
+    - Add environment variables if needed for deployment.
     ```
 
-1. Click the ![the keep button image](https://img.shields.io/badge/keep-blue) button of GitHub Copilot to take the changes.
+3. Click the ![the keep button image](https://img.shields.io/badge/keep-blue) button of GitHub Copilot to take the changes.
 
-1. Once `Dockerfile.dotnet` is created, build the container image with the following prompt.
+4. Once `Dockerfile` is created, build the container image with the following prompt:
 
     ```text
-    Use `Dockerfile.dotnet` and build a container image.
+    Use the Dockerfile in `complete/frontend` and build a container image.
 
     - Use `contoso-frontend` as the container image name.
     - Use `latest` as the container image tag.
@@ -137,21 +144,21 @@ Refer to the [README](../README.md) doc for preparation.
     - If the build fails, analyze the issues and fix them.
     ```
 
-1. Click the ![the keep button image](https://img.shields.io/badge/keep-blue) button of GitHub Copilot to take the changes.
+5. Click the ![the keep button image](https://img.shields.io/badge/keep-blue) button of GitHub Copilot to take the changes.
 
-1. Once the build succeeds, run the container image with the following prompt.
+6. Once the build succeeds, run the container image with the following prompt:
 
     ```text
     Use the container image just built, run a container and verify if the app is running properly.
     
-    - Use the host port of `3030`.
-    - Pass the environment variable `ApiSettings__BaseUrl` the value of `http://localhost:8080/api`.
+    - Use the host port of `3030` and map it to container port `80`.
+    - Ensure the Nginx config proxies `/api` requests to the backend at `http://localhost:8080`.
     ```
 
-1. Make sure that both frontend and backend apps are NOT communicating with each other because they don't know each other yet. Run the prompt like below.
+7. Make sure that both frontend and backend apps are NOT communicating with each other because they don't know each other yet. Run the prompt like below:
 
     ```text
-    Remove both Java and .NET containers and their respective container images.
+    Remove both Java and frontend containers and their respective container images.
     ```
 
 ### Orchestrate Containers
