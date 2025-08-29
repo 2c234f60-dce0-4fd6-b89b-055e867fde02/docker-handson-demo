@@ -1,4 +1,22 @@
+# build and serve multi-container application
+# use this: docker-compose -f docker-compose.yml up --build -d
+
 services:
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: socialapp-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - socialapp-network
+    restart: unless-stopped
+
   # Java Spring Boot Backend
   backend:
     build:
@@ -19,21 +37,6 @@ services:
       - socialapp-network
     volumes:
       - backend-data:/app/data
-    restart: unless-stopped
-
-  # React Frontend
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: socialapp-frontend
-    ports:
-      - "3000:80"
-    depends_on:
-      backend:
-        condition: service_healthy
-    networks:
-      - socialapp-network
     restart: unless-stopped
 
 networks:
