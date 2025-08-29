@@ -36,20 +36,6 @@ services:
       - socialapp-network
     restart: unless-stopped
 
-  # Portainer for Docker Management
-  portainer:
-    image: portainer/portainer-ce:alpine
-    container_name: portainer
-    ports:
-      - "9000:9000"
-      - "8000:8000"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - portainer-data:/data
-    networks:
-      - socialapp-network
-    restart: unless-stopped
-
 networks:
   socialapp-network:
     driver: bridge
