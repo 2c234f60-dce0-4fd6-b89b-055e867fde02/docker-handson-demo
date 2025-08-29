@@ -52,6 +52,36 @@ This workshop demonstrates a complete social media application built with GitHub
 | 00: Development Environment        | [00-setup.md](./docs/00-setup.md)                       |
 | 05: Containerization               | [05-containerization.md](./docs/05-containerization.md) |
 
+## Docker Support
+
+### Quick Start with Docker Compose
+
+Run the entire application stack with one command:
+
+```bash
+cd complete
+docker-compose up --build
+```
+
+This will start:
+- **Backend**: http://localhost:8080 (Java Spring Boot API)
+- **Frontend**: http://localhost:3000 (React app via Nginx)
+- **Portainer**: http://localhost:9000 (Docker management UI)
+
+To stop all services:
+```bash
+docker-compose down
+```
+
+### Docker Features
+
+- **Lightweight Images**: Uses Alpine Linux base images for minimal size
+- **Multi-stage Builds**: Optimized builds with separate build and runtime stages
+- **Health Checks**: Built-in health monitoring for both services
+- **Security**: Non-root users and security headers
+- **Networking**: Isolated Docker network for service communication
+- **Persistent Data**: Volume mounts for SQLite database
+- **Portainer**: Web UI for Docker container management
 
 ## Read More...
 
