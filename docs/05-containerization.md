@@ -17,7 +17,6 @@ Refer to the [README](../README.md) doc for preparation.
 - [Check GitHub Copilot Agent Mode](#check-github-copilot-agent-mode)
 - [Prepare Custom Instructions](#prepare-custom-instructions)
 - [Containerize Java Application](#containerize-java-application)
-- [Containerize .NET Application](#containerize-net-application)
 - [Orchestrate Containers](#orchestrate-containers)
 
 ### Check GitHub Copilot Agent Mode
