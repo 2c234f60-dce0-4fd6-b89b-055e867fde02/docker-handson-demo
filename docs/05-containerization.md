@@ -1,54 +1,54 @@
-# 05: Containerization
+# 05: 컨테이너화
 
-## Scenario
+## 시나리오
 
-Contoso is a company that sells products for various outdoor activities. A marketing department of Contoso would like to launch a micro social media website to promote their products for existing and potential customers.
+Contoso는 다양한 아웃도어 활동용 제품을 판매하는 회사입니다. Contoso의 마케팅 부서에서는 기존 및 잠재 고객에게 자사 제품을 홍보하기 위한 마이크로 소셜 미디어 웹사이트를 출시하고자 합니다.
 
-They now have both Java-based backend app and React-based frontend app. They want to make them containerized so that they can be deployed on any platform.
+장기간 프로젝트를 수행하여 Java 기반 백엔드 앱과 React 기반 프론트엔드 앱을 모두 보유하고 있습니다. 그러나 앱을 서빙하기 직전 업체가 탈주했고, 회사는 내부 이슈로 내년도에 인프라 환경 전면 교체를 계획하고 있습니다. 이 기회에 당신은 어떤 환경에서도 동일하게 앱을 서빙할 수 있도록 컨테이너화 기술을 도입하고자 합니다.
 
-Now, as a DevOps engineer, you should containerize both apps using GitHub Copilot by copying the complete/step-00 directory to workshop and adding containerization.
+이제 당신은 DevOps 엔지니어로서 GitHub Copilot을 사용해 두 앱을 모두 컨테이너화해야 합니다.
 
-## Prerequisites
+## 전제 조건
 
-Refer to the [README](../README.md) doc for preparation.
+준비 사항에 대해서는 [README](../README.md) 문서를 참고하세요.
 
-## Getting Started
+## 시작하기
 
-- [Copy Base Application to Step-05](#copy-base-application-to-step-05)
-- [Check GitHub Copilot Agent Mode](#check-github-copilot-agent-mode)
-- [Prepare Custom Instructions](#prepare-custom-instructions)
-- [Containerize Java Backend Application](#containerize-java-backend-application)
-- [Containerize React Frontend Application](#containerize-react-frontend-application)
-- [Orchestrate Containers](#orchestrate-containers)
+- [기본 애플리케이션을 workshop으로 복사](#기본-애플리케이션을-workshop으로-복사)
+- [GitHub Copilot Agent 모드 확인](#github-copilot-agent-모드-확인)
+- [사용자 지정 지침 준비](#사용자-지정-지침-준비)
+- [Java 백엔드 애플리케이션 컨테이너화](#java-백엔드-애플리케이션-컨테이너화)
+- [React 프론트엔드 애플리케이션 컨테이너화](#react-프론트엔드-애플리케이션-컨테이너화)
+- [컨테이너 오케스트레이션](#컨테이너-오케스트레이션)
 
-### Copy Base Application to Step-05
+### 기본 애플리케이션을 workshop으로 복사
 
-1. First, copy the base application from `complete/step-00` to `workshop`:
+1. 먼저 `complete/step-00`에서 `workshop`으로 기본 애플리케이션을 복사하세요:
 
    ```bash
-   # From repository root
+   # 저장소 루트에서
    cp -r complete/step-00 workshop
    ```
 
-   This creates a new directory structure that you will enhance with containerization using GitHub Copilot.
+   이는 GitHub Copilot을 사용하여 컨테이너화로 향상시킬 새 디렉터리 구조를 생성합니다.
 
-### Check GitHub Copilot Agent Mode
+### GitHub Copilot Agent 모드 확인
 
-1. Click the GitHub Copilot icon on the top of GitHub Codespace or VS Code and open GitHub Copilot window.
+1. VS Code 상단에 있는 GitHub Copilot 아이콘을 클릭하여 GitHub Copilot 창을 열어주세요.
 
    ![Open GitHub Copilot Chat](./images/setup-02.png)
 
-1. If you're asked to login or sign up, do it. It's free of charge.
-1. Make sure you're using GitHub Copilot Agent Mode.
+1. 로그인이나 가입을 요구받으면 진행하세요. 무료입니다.
+1. GitHub Copilot Agent 모드를 사용하고 있는지 확인하세요.
 
    ![GitHub Copilot Agent Mode](./images/setup-03.png)
 
-1. Select model to either `GPT-4.1` or `Claude Sonnet 4`.
-1. Make sure that you've configured [MCP Servers](./00-setup.md#set-up-mcp-servers).
+1. 모델을 `GPT-4.1` 또는 `Claude Sonnet 4` 중 하나로 선택하세요.
+1. [MCP 서버](./00-setup.md#mcp-서버-설정하기)를 구성했는지 확인하세요.
 
-### Prepare Custom Instructions
+### 사용자 지정 지침 준비
 
-1. Set the environment variable of `$REPOSITORY_ROOT`.
+1. `$REPOSITORY_ROOT` 환경 변수를 설정하세요.
 
    ```bash
    # bash/zsh
@@ -60,7 +60,7 @@ Refer to the [README](../README.md) doc for preparation.
    $REPOSITORY_ROOT = git rev-parse --show-toplevel
    ```
 
-1. Copy custom instructions.
+1. 사용자 지침을 복사하세요.
 
     ```bash
     # bash/zsh
@@ -74,141 +74,141 @@ Refer to the [README](../README.md) doc for preparation.
               -Destination $REPOSITORY_ROOT/.github/ -Recurse -Force
     ```
 
-### Containerize Java Backend Application
+### Java 백엔드 애플리케이션 컨테이너화
 
-1. Make sure that you're using GitHub Copilot Agent Mode with the model of `Claude Sonnet 4` or `GPT-4.1`.
-1. Use prompt like below to build a container image for the Java backend app.
+1. `Claude Sonnet 4` 또는 `GPT-4.1` 모델로 GitHub Copilot Agent 모드를 사용하고 있는지 확인하세요.
+1. Java 백엔드 앱의 컨테이너 이미지를 빌드하기 위해 아래와 같은 프롬프트를 사용하세요.
 
     ```text
-    I'd like to build a container image of a Java Spring Boot app. Follow the instructions below.
+    Java Spring Boot 앱의 컨테이너 이미지를 빌드하고 싶습니다. 아래 지시사항을 따라주세요.
 
-    - Identify all the steps first, which you're going to do.
-    - The Java app is located at `workshop/backend`.
-    - Your working directory is the repository root.
-    - Create a Dockerfile in the `workshop/backend` directory.
-    - Use Amazon Corretto JDK 17 Alpine for the build stage.
-    - Use Amazon Corretto JRE 17 Alpine for the runtime stage.
-    - Use multi-stage build approach.
-    - Use the target port number of `8080` for the container image.
-    - Create an SQLite database file, `sns_api.db`, in the container image. DO NOT copy the file from the host.
-    - Add health check using the Spring Boot Actuator endpoint.
-    - Run as non-root user for security.
+    - 먼저 수행할 모든 단계를 식별하세요.
+    - Java 앱은 `workshop/backend`에 위치해 있습니다.
+    - 작업 디렉터리는 저장소 루트입니다.
+    - `workshop/backend` 디렉터리에 Dockerfile을 생성하세요.
+    - 빌드 단계에서는 Amazon Corretto JDK 17 Alpine을 사용하세요.
+    - 런타임 단계에서는 Amazon Corretto JRE 17 Alpine을 사용하세요.
+    - 멀티 스텝 빌드 접근 방식을 사용하세요.
+    - 컨테이너 이미지의 대상 포트 번호로 `8080`을 사용하세요.
+    - 컨테이너 이미지에 SQLite 데이터베이스 파일인 `sns_api.db`를 생성하세요. 호스트에서 파일을 복사하지는 마세요.
+    - Spring Boot Actuator 엔드포인트를 사용하여 상태 확인을 추가하세요.
+    - 보안을 위해 비root 사용자로 실행하세요.
     ```
 
-1. Click the ![the keep button image](https://img.shields.io/badge/keep-blue) button of GitHub Copilot to take the changes.
+1. 변경 사항을 반영하려면 GitHub Copilot의 ![the keep button image](https://img.shields.io/badge/keep-blue) 버튼을 클릭하세요.
 
-1. Once `Dockerfile` is created, build the container image with the following prompt.
+1. `Dockerfile`이 생성되면 다음 프롬프트로 컨테이너 이미지를 빌드하세요.
 
     ```text
-    Use the Dockerfile in `workshop/backend` and build a container image.
+    `workshop/backend`에 있는 Dockerfile을 사용하여 컨테이너 이미지를 빌드하세요.
 
-    - Use `socialapp-backend` as the container image name.
-    - Use `latest` as the container image tag.
-    - Verify if the container image is built properly.
-    - If the build fails, analyze the issues and fix them.
+    - 컨테이너 이미지 이름으로 `socialapp-backend`를 사용하세요.
+    - 컨테이너 이미지 태그로 `latest`를 사용하세요.
+    - 컨테이너 이미지가 제대로 빌드되었는지 확인하세요.
+    - 빌드가 실패하면 문제를 분석하고 수정하세요.
     ```
 
-1. Click the ![the keep button image](https://img.shields.io/badge/keep-blue) button of GitHub Copilot to take the changes.
+1. 변경 사항을 반영하려면 GitHub Copilot의 ![the keep button image](https://img.shields.io/badge/keep-blue) 버튼을 클릭하세요.
 
-1. Once the build succeeds, run the container image with the following prompt.
+1. 빌드가 성공하면 다음 프롬프트로 컨테이너 이미지를 실행하세요.
 
     ```text
-    Use the container image just built, run a container and verify if the app is running properly.
+    방금 빌드한 컨테이너 이미지를 사용하여 컨테이너를 실행하고 앱이 제대로 실행되고 있는지 확인하세요.
     
-    - Use the host port of `8080` and map it to container port `8080`.
-    - Verify the health endpoint is accessible.
+    - 호스트 포트 `8080`을 사용하여 컨테이너 포트 `8080`에 매핑하세요.
+    - 상태 엔드포인트에 접근 가능한지 확인하세요.
     ```
 
-### Containerize React Frontend Application
+### React 프론트엔드 애플리케이션 컨테이너화
 
-1. Make sure that you're using GitHub Copilot Agent Mode with the model of `Claude Sonnet 4` or `GPT-4.1`.
-2. Use the following prompt to build a container image for the React frontend app:
+1. `Claude Sonnet 4` 또는 `GPT-4.1` 모델로 GitHub Copilot Agent 모드를 사용하고 있는지 확인하세요.
+2. React 프론트엔드 앱의 컨테이너 이미지를 빌드하기 위해 다음 프롬프트를 사용하세요:
 
     ```text
-    I'd like to build a container image of a React frontend app. Follow the instructions below.
+    React 프론트엔드 앱의 컨테이너 이미지를 빌드하고 싶습니다. 아래 지시사항을 따라주세요.
 
-    - Identify all the steps first, which you're going to do.
-    - The frontend app is located at `workshop/frontend`.
-    - Your working directory is the repository root.
-    - Create a Dockerfile named `Dockerfile` in the `workshop/frontend` directory.
-    - Use Node.js 18-alpine for the build stage.
-    - Use nginx:1.25-alpine for the production stage.
-    - Use multi-stage build approach.
-    - Build the app using `npm ci` and `npm run build`.
-    - Serve the built files with Nginx.
-    - Expose port `80` for the container image.
-    - Copy and use the custom `nginx.conf` for routing and API proxy.
-    - Run as non-root user for security.
-    - Add health check endpoint.
+    - 먼저 수행할 모든 단계를 식별하세요.
+    - 프론트엔드 앱은 `workshop/frontend`에 위치해 있습니다.
+    - 작업 디렉터리는 저장소 루트입니다.
+    - `workshop/frontend` 디렉터리에 `Dockerfile`이라는 이름의 Dockerfile을 생성하세요.
+    - 빌드 단계에서는 Node.js 18-alpine을 사용하세요.
+    - 프로덕션 단계에서는 nginx:1.25-alpine을 사용하세요.
+    - 다단계 빌드 접근 방식을 사용하세요.
+    - `npm ci`와 `npm run build`를 사용하여 앱을 빌드하세요.
+    - Nginx로 빌드된 파일을 서브하세요.
+    - 컨테이너 이미지에 포트 `80`을 노출하세요.
+    - 라우팅과 API 프록시를 위해 사용자 지정 `nginx.conf`를 복사하고 사용하세요.
+    - 보안을 위해 비root 사용자로 실행하세요.
+    - 상태 확인 엔드포인트를 추가하세요.
     ```
 
-3. Click the ![the keep button image](https://img.shields.io/badge/keep-blue) button of GitHub Copilot to take the changes.
+3. 변경 사항을 반영하려면 GitHub Copilot의 ![the keep button image](https://img.shields.io/badge/keep-blue) 버튼을 클릭하세요.
 
-4. Once `Dockerfile` is created, build the container image with the following prompt:
+4. `Dockerfile`이 생성되면 다음 프롬프트로 컨테이너 이미지를 빌드하세요:
 
     ```text
-    Use the Dockerfile in `workshop/frontend` and build a container image.
+    `workshop/frontend`에 있는 Dockerfile을 사용하여 컨테이너 이미지를 빌드하세요.
 
-    - Use `socialapp-frontend` as the container image name.
-    - Use `latest` as the container image tag.
-    - Verify if the container image is built properly.
-    - If the build fails, analyze the issues and fix them.
+    - 컨테이너 이미지 이름으로 `socialapp-frontend`를 사용하세요.
+    - 컨테이너 이미지 태그로 `latest`를 사용하세요.
+    - 컨테이너 이미지가 제대로 빌드되었는지 확인하세요.
+    - 빌드가 실패하면 문제를 분석하고 수정하세요.
     ```
 
-5. Click the ![the keep button image](https://img.shields.io/badge/keep-blue) button of GitHub Copilot to take the changes.
+5. 변경 사항을 반영하려면 GitHub Copilot의 ![the keep button image](https://img.shields.io/badge/keep-blue) 버튼을 클릭하세요.
 
-6. Once the build succeeds, run the container image with the following prompt:
+6. 빌드가 성공하면 다음 프롬프트로 컨테이너 이미지를 실행하세요:
 
     ```text
-    Use the container image just built, run a container and verify if the app is running properly.
+    방금 빌드한 컨테이너 이미지를 사용하여 컨테이너를 실행하고 앱이 제대로 실행되고 있는지 확인하세요.
     
-    - Use the host port of `3000` and map it to container port `80`.
-    - Ensure the Nginx config proxies `/api` requests to the backend.
+    - 호스트 포트 `3000`을 사용하여 컨테이너 포트 `80`에 매핑하세요.
+    - Nginx 설정이 `/api` 요청을 백엔드로 프록시하는지 확인하세요.
     ```
 
-7. Make sure that both frontend and backend apps are NOT communicating with each other because they don't know each other yet. Run the prompt like below:
+7. 프론트엔드와 백엔드 앱이 아직 서로를 모르기 때문에 서로 통신하지 않는지 확인하세요. 다음과 같은 프롬프트를 실행하세요:
 
     ```text
-    Remove both backend and frontend containers and their respective container images.
+    백엔드와 프론트엔드 컨테이너와 각각의 컨테이너 이미지를 모두 제거하세요.
     ```
 
-### Orchestrate Containers
+### 컨테이너 오케스트레이션
 
-1. Make sure that you're using GitHub Copilot Agent Mode with the model of `Claude Sonnet 4` or `GPT-4.1`.
-1. Use prompt like below to build a Docker Compose file.
+1. `Claude Sonnet 4` 또는 `GPT-4.1` 모델로 GitHub Copilot Agent 모드를 사용하고 있는지 확인하세요.
+1. Docker Compose 파일을 빌드하기 위해 아래와 같은 프롬프트를 사용하세요.
 
     ```text
-    I'd like to create a Docker Compose file. Follow the instructions below.
+    Docker Compose 파일을 만들고 싶습니다. 아래 지시사항을 따라주세요.
     
-    - Identify all the steps first, which you're going to do.
-    - Your working directory is the repository root.
-    - Create `docker-compose.yml` in the `workshop` directory.
-    - Use the Dockerfile in `./backend` for the backend service.
-    - Use the Dockerfile in `./frontend` for the frontend service.
-    - Use `socialapp-network` as the network name.
-    - Use `socialapp-backend` as the container name of the Java app. Its target port is 8080, and host port is 8080.
-    - Use `socialapp-frontend` as the container name of the React app. Its target port is 80, and host port is 3000.
-    - Add environment variable `SPRING_PROFILES_ACTIVE=docker` to the backend container.
-    - Add health checks for both services.
-    - Add dependency so frontend waits for backend to be healthy.
-    - Create a volume for backend data persistence.
+    - 먼저 수행할 모든 단계를 식별하세요.
+    - 작업 디렉터리는 저장소 루트입니다.
+    - `workshop` 디렉터리에 `docker-compose.yml`을 생성하세요.
+    - 백엔드 서비스에는 `./backend`에 있는 Dockerfile을 사용하세요.
+    - 프론트엔드 서비스에는 `./frontend`에 있는 Dockerfile을 사용하세요.
+    - 네트워크 이름으로 `socialapp-network`를 사용하세요.
+    - Java 앱의 컨테이너 이름으로 `socialapp-backend`를 사용하세요. 대상 포트는 8080이고 호스트 포트는 8080입니다.
+    - React 앱의 컨테이너 이름으로 `socialapp-frontend`를 사용하세요. 대상 포트는 80이고 호스트 포트는 3000입니다.
+    - 백엔드 컨테이너에 환경 변수 `SPRING_PROFILES_ACTIVE=docker`를 추가하세요.
+    - 두 서비스 모두에 상태 확인을 추가하세요.
+    - 프론트엔드가 백엔드가 정상 상태가 될 때까지 기다리도록 의존성을 추가하세요.
+    - 백엔드 데이터 지속성을 위한 볼륨을 생성하세요.
     ```
 
-1. Click the ![the keep button image](https://img.shields.io/badge/keep-blue) button of GitHub Copilot to take the changes.
+1. 변경 사항을 반영하려면 GitHub Copilot의 ![the keep button image](https://img.shields.io/badge/keep-blue) 버튼을 클릭하세요.
 
-1. Once the `docker-compose.yml` file is created, run it and verify if both apps are running properly.
+1. `docker-compose.yml` 파일이 생성되면 실행하고 두 앱 모두 제대로 실행되는지 확인하세요.
 
     ```text
-    Run the Docker compose file and verify if all the apps are running properly.
+    Docker compose 파일을 실행하고 모든 앱이 제대로 실행되는지 확인하세요.
     
-    - Navigate to the `workshop` directory.
-    - Use `docker-compose up --build -d` to start the services.
-    - Check the logs to ensure both services start successfully.
-    - Verify both services are healthy.
+    - `workshop` 디렉터리로 이동하세요.
+    - `docker-compose up --build -d`를 사용하여 서비스를 시작하세요.
+    - 두 서비스가 성공적으로 시작되는지 로그를 확인하세요.
+    - 두 서비스가 정상 상태인지 확인하세요.
     ```
 
-1. Open a web browser and navigate to `http://localhost:3000`, and verify if the apps are up and running properly and can communicate with each other.
+1. 웹 브라우저를 열고 `http://localhost:3000`으로 이동하여 앱이 정상적으로 실행되고 서로 통신할 수 있는지 확인하세요.
 
 ---
 
-Congratulations! 🎉 You've successfully containerized both the Java backend and React frontend applications using GitHub Copilot! The applications are now ready for deployment on any platform that supports Docker containers.
+축하합니다! 🎉 GitHub Copilot을 사용하여 Java 백엔드와 React 프론트엔드 애플리케이션을 모두 성공적으로 컨테이너화했습니다! 이제 애플리케이션이 Docker 컨테이너를 지원하는 모든 플랫폼에 배포할 준비가 되었습니다.
