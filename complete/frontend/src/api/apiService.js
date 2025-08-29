@@ -24,8 +24,8 @@ export const postApi = {
     apiClient.post(`/posts/${postId}/likes`, { username }),
 
   // 포스트 좋아요 취소 (DELETE)
-  unlikePost: (postId) =>
-    apiClient.delete(`/posts/${postId}/likes`),
+  unlikePost: (postId, username) =>
+    apiClient.delete(`/posts/${postId}/likes?username=${encodeURIComponent(username)}`),
 };
 
 export const commentApi = {
