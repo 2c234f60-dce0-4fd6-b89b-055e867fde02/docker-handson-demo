@@ -16,7 +16,6 @@ Contoso는 이제 증가하는 트래픽을 처리하기 위해 백엔드를 수
 ## 시작하기
 
 - [Step-05를 workshop으로 복사](#step-05를-workshop으로-복사)
-- [GitHub Copilot Agent 모드 확인](#github-copilot-agent-모드-확인)
 - [스케일링을 위한 Docker Compose 수정](#스케일링을-위한-docker-compose-수정)
 - [프론트엔드 구성 업데이트](#프론트엔드-구성-업데이트)
 - [수평 스케일링 테스트](#수평-스케일링-테스트)
@@ -32,102 +31,257 @@ Contoso는 이제 증가하는 트래픽을 처리하기 위해 백엔드를 수
 
    이는 GitHub Copilot을 사용하여 스케일링 기능으로 향상시킬 새 디렉터리 구조를 생성합니다.
 
-### GitHub Copilot Agent 모드 확인
-
-1. VS Code 상단에 있는 GitHub Copilot 아이콘을 클릭하여 GitHub Copilot 창을 열어주세요.
-
-   ![Open GitHub Copilot Chat](./images/setup-02.png)
-
-1. 로그인이나 가입을 요구받으면 진행하세요. 무료입니다.
-1. GitHub Copilot Agent 모드를 사용하고 있는지 확인하세요.
-
-   ![GitHub Copilot Agent Mode](./images/setup-03.png)
-
-1. 모델을 `GPT-4.1` 또는 `Claude Sonnet 4` 중 하나로 선택하세요.
 
 ### 스케일링을 위한 Docker Compose 수정
 
-1. `Claude Sonnet 4` 또는 `GPT-4.1` 모델로 GitHub Copilot Agent 모드를 사용하고 있는지 확인하세요.
-2. 수평 스케일링을 위해 Docker Compose 파일을 수정하기 위해 다음 프롬프트를 사용하세요:
+1. `workshop/docker-compose.yml` 파일을 열어 다음과 같이 수정합니다.
 
-    ```text
-    백엔드의 수평 스케일링을 지원하도록 Docker Compose 파일을 수정하고 싶습니다. 아래 지시사항을 따라주세요.
+2. **백엔드 서비스 수정**: 여러 인스턴스를 허용하기 위해 백엔드 서비스를 다음과 같이 수정하세요:
 
-    - 먼저 수행할 모든 단계를 식별하세요.
-    - Docker Compose 파일은 `workshop/docker-compose.yml`에 위치해 있습니다.
-    - 작업 디렉터리는 저장소 루트입니다.
-    - 여러 인스턴스를 허용하기 위해 백엔드 서비스에서 `container_name`을 제거하세요.
-    - 백엔드 서비스가 내부에서만 접근 가능하도록 명시적인 `ports` 매핑을 제거하세요.
-    - 프론트엔드 서비스는 포트가 노출된 단일 인스턴스로 유지하세요.
-    - 네트워크 이름으로 `appnet`을 사용하도록 네트워크 구성을 업데이트하세요.
-    - 백엔드 서비스를 스케일하는 방법을 설명하는 주석을 추가하세요.
-    - 백엔드가 데이터베이스 구성에 환경 변수를 사용하도록 하세요.
-    - 상태 확인 조건 없이 `backend` 서비스에만 의존하도록 프론트엔드 의존성을 업데이트하세요.
-    ```
+   ```yaml
+   services:
+     # 백엔드 서비스 - 스케일링 가능하도록 수정
+     backend:
+       build:
+         context: ./backend
+         dockerfile: Dockerfile
+       # container_name: socialapp-backend  # 제거: 스케일링을 위해 고정 이름 제거
+       environment:
+         - SPRING_PROFILES_ACTIVE=docker
+         - DATABASE_PATH=/app/data/sns_api.db  # 데이터베이스 경로 환경변수
+       # ports: # 제거: 내부 통신만 허용
+       #   - "8080:8080"
+       volumes:
+         - backend-data:/app/data
+       networks:
+         - appnet
+       healthcheck:
+         test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+         interval: 30s
+         timeout: 10s
+         retries: 3
+   ```
 
-3. 변경 사항을 반영하려면 GitHub Copilot의 ![the keep button image](https://img.shields.io/badge/keep-blue) 버튼을 클릭하세요.
+3. **프론트엔드 서비스 수정**: 백엔드에 대한 의존성을 단순화합니다:
+
+   ```yaml
+     # 프론트엔드 서비스 - 단일 인스턴스 유지
+     frontend:
+       build:
+         context: ./frontend
+         dockerfile: Dockerfile
+       container_name: socialapp-frontend
+       ports:
+         - "3000:80"  # 외부 접근 허용
+       depends_on:
+         - backend  # 상태 확인 조건 제거, 단순 의존성만 유지
+       networks:
+         - appnet
+   ```
+
+4. **네트워크 설정 업데이트**: 네트워크 이름을 변경하고 주석을 추가합니다:
+
+   ```yaml
+   # 볼륨 설정
+   volumes:
+     backend-data:
+       driver: local
+   
+   # 네트워크 설정
+   networks:
+     appnet:  # socialapp-network에서 appnet으로 변경
+       driver: bridge
+   ```
+
+5. **스케일링 가이드 주석 추가**: 파일 상단에 다음 주석을 추가합니다:
+
+   ```yaml
+   # 수평 스케일링 가이드:
+   # 백엔드 서비스를 3개 인스턴스로 스케일: docker-compose up --scale backend=3 -d
+   # 백엔드 서비스를 5개 인스턴스로 스케일: docker-compose up --scale backend=5 -d
+   # 현재 실행 중인 서비스 확인: docker-compose ps
+   # 특정 서비스 로그 확인: docker-compose logs -f backend
+   
+   version: '3.8'
+   ```
 
 ### 프론트엔드 구성 업데이트
 
-1. 프론트엔드가 스케일된 백엔드 인스턴스에 연결할 수 있도록 하기 위해 다음 프롬프트를 사용하세요:
+1. `workshop/frontend/nginx.conf` 파일을 열어 스케일된 백엔드 인스턴스와 작동하도록 수정합니다.
 
-    ```text
-    스케일된 백엔드 인스턴스와 작동하도록 프론트엔드 nginx 구성을 업데이트해야 합니다. 아래 지시사항을 따라주세요.
+2. **API 프록시 설정 수정**: 기존 nginx 설정에서 다음 부분을 확인하고 수정합니다:
 
-    - 먼저 수행할 모든 단계를 식별하세요.
-    - nginx 구성은 `workshop/frontend/nginx.conf`에 있습니다.
-    - 작업 디렉터리는 저장소 루트입니다.
-    - `/api` 프록시 패스가 Docker 서비스 이름 `backend`를 사용하도록 하세요 (Docker가 자동으로 로드 밸런싱을 수행합니다).
-    - 프록시 구성이 여러 백엔드 인스턴스를 처리할 수 있도록 하세요.
-    - 로드 밸런싱을 위한 적절한 프록시 헤더를 추가하세요.
-    - 컨테이너 네트워킹에 최적화된 구성이 되도록 하세요.
-    ```
+   ```nginx
+   server {
+       listen 80;
+       server_name localhost;
+       
+       # 정적 파일 서빙
+       location / {
+           root /usr/share/nginx/html;
+           index index.html index.htm;
+           try_files $uri $uri/ /index.html;
+       }
+       
+       # API 프록시 - 백엔드 서비스로 전달
+       location /api/ {
+           # Docker 서비스 이름 사용 (Docker가 자동으로 로드 밸런싱 수행)
+           proxy_pass http://backend:8080;
+           
+           # 로드 밸런싱을 위한 프록시 헤더 설정
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+           
+           # 컨테이너 네트워킹 최적화
+           proxy_connect_timeout 30s;
+           proxy_send_timeout 30s;
+           proxy_read_timeout 30s;
+           
+           # 연결 재사용으로 성능 향상
+           proxy_http_version 1.1;
+           proxy_set_header Connection "";
+       }
+   }
+   ```
 
-2. 변경 사항을 반영하려면 GitHub Copilot의 ![the keep button image](https://img.shields.io/badge/keep-blue) 버튼을 클릭하세요.
+3. **중요한 점들**:
+   - `proxy_pass http://backend:8080;`: Docker 서비스 이름 `backend`를 사용합니다
+   - Docker Compose가 여러 백엔드 인스턴스 간의 로드 밸런싱을 자동으로 처리합니다
+   - 프록시 헤더들이 올바른 클라이언트 정보를 백엔드로 전달합니다
 
 ### 수평 스케일링 테스트
 
-1. 스케일된 애플리케이션을 테스트하기 위해 다음 프롬프트를 사용하세요:
+1. **워크숍 디렉터리로 이동**:
 
-    ```text
-    수평적으로 스케일된 애플리케이션을 테스트하고 싶습니다. 아래 지시사항을 따라주세요.
+   ```bash
+   cd workshop
+   ```
 
-    - 먼저 수행할 모든 단계를 식별하세요.
-    - `workshop` 디렉터리로 이동하세요.
-    - Docker Compose를 사용하여 스케일링과 함께 서비스를 빌드하고 시작하세요.
-    - 백엔드 서비스를 3개 인스턴스로 스케일하세요.
-    - 여러 백엔드 인스턴스가 실행 중인지 확인하세요.
-    - 모든 백엔드 인스턴스의 로그를 확인하세요.
-    - 프론트엔드를 통해 애플리케이션 기능을 테스트하세요.
-    - 백엔드 인스턴스를 확장하고 축소하는 방법을 보여주세요.
-    ```
+2. **스케일링과 함께 서비스 시작**:
 
-2. 변경 사항을 반영하려면 GitHub Copilot의 ![the keep button image](https://img.shields.io/badge/keep-blue) 버튼을 클릭하세요.
+   ```bash
+   # 백엔드를 3개 인스턴스로 스케일하여 시작
+   docker-compose up --scale backend=3 --build -d
+   ```
 
-3. 스케일링이 작동하면 다음 프롬프트로 애플리케이션을 테스트하세요:
+3. **실행 중인 서비스 확인**:
 
-    ```text
-    스케일된 애플리케이션이 제대로 작동하는지 테스트하세요.
+   ```bash
+   # 실행 중인 컨테이너 확인
+   docker-compose ps
+   ```
 
-    - 웹 브라우저를 열고 `http://localhost:80`으로 이동하세요.
-    - 백엔드 로드 분산을 테스트하기 위해 여러 게시물을 생성하세요.
-    - 로드 분산을 확인하기 위해 다른 백엔드 인스턴스의 로그를 확인하세요.
-    - 여러 백엔드 인스턴스와 함께 애플리케이션이 응답성을 유지하는지 확인하세요.
-    ```
+   출력 예시:
+   ```
+        Name                     Command               State           Ports
+   -----------------------------------------------------------------------------
+   workshop_backend_1     java -jar /app/app.jar      Up      8080/tcp
+   workshop_backend_2     java -jar /app/app.jar      Up      8080/tcp  
+   workshop_backend_3     java -jar /app/app.jar      Up      8080/tcp
+   workshop_frontend_1    nginx -g daemon off;         Up      0.0.0.0:3000->80/tcp
+   ```
+
+4. **백엔드 로그 모니터링**:
+
+   ```bash
+   # 모든 백엔드 인스턴스의 로그를 실시간으로 확인
+   docker-compose logs -f backend
+   ```
+
+5. **애플리케이션 기능 테스트**:
+
+   - 웹 브라우저를 열고 `http://localhost:3000`으로 접속
+   - 여러 게시물을 생성하여 백엔드 로드 분산 테스트
+   - 로그에서 다른 백엔드 인스턴스들이 요청을 처리하는 것을 확인
+
+6. **동적 스케일링 테스트**:
+
+   ```bash
+   # 백엔드를 5개 인스턴스로 확장
+   docker-compose up --scale backend=5 -d
+   
+   # 확인
+   docker-compose ps
+   
+   # 2개 인스턴스로 축소
+   docker-compose up --scale backend=2 -d
+   
+   # 확인
+   docker-compose ps
+   ```
+
+7. **개별 인스턴스 관리**:
+
+   ```bash
+   # 특정 백엔드 인스턴스의 로그만 확인
+   docker-compose logs -f backend_1
+   
+   # 특정 인스턴스 재시작 (다른 인스턴스는 계속 실행)
+   docker-compose restart backend_1
+   
+   # 실시간 리소스 사용량 확인
+   docker stats
+   ```
 
 ### 고급 스케일링 작업
 
-1. 고급 스케일링 작업에 대해 알아보기 위해 다음 프롬프트를 사용하세요:
+1. **로드 밸런싱 이해하기**:
+   
+   Docker Compose는 동일한 서비스의 여러 인스턴스 간에 자동으로 로드 밸런싱을 수행합니다:
+   - DNS 라운드 로빈 방식 사용
+   - 각 요청이 다른 백엔드 인스턴스로 순환 분배
+   - 인스턴스가 다운되면 자동으로 트래픽 재분배
 
-    ```text
-    컨테이너화된 애플리케이션의 고급 스케일링 작업을 보여주세요.
+2. **실시간 모니터링**:
 
-    - 백엔드를 5개 인스턴스로 스케일하는 방법을 시연하세요.
-    - 2개 인스턴스로 축소하는 방법을 보여주세요.
-    - Docker Compose가 인스턴스 간 로드 밸런싱을 처리하는 방법을 설명하세요.
-    - 모든 스케일된 인스턴스의 실시간 로그를 보는 방법을 보여주세요.
-    - 다른 인스턴스에 영향을 주지 않고 개별 인스턴스를 재시작하는 방법을 시연하세요.
-    ```
+   ```bash
+   # 모든 컨테이너의 실시간 리소스 사용량
+   docker stats
+   
+   # 특정 서비스의 상세 정보
+   docker-compose ps backend
+   
+   # 서비스별 로그를 분리해서 보기
+   docker-compose logs --tail=50 backend_1 &
+   docker-compose logs --tail=50 backend_2 &
+   docker-compose logs --tail=50 backend_3 &
+   ```
+
+3. **부하 테스트**:
+
+   ```bash
+   # curl을 사용한 간단한 부하 테스트
+   for i in {1..20}; do
+     curl -X GET http://localhost:3000/api/posts
+     echo "Request $i completed"
+     sleep 0.5
+   done
+   ```
+
+4. **장애 복구 테스트**:
+
+   ```bash
+   # 특정 백엔드 인스턴스 중지
+   docker-compose kill backend_1
+   
+   # 애플리케이션이 여전히 작동하는지 확인
+   curl http://localhost:3000/api/posts
+   
+   # 중지된 인스턴스 다시 시작
+   docker-compose up -d backend
+   ```
+
+5. **정리 작업**:
+
+   ```bash
+   # 모든 서비스 중지
+   docker-compose down
+   
+   # 볼륨까지 함께 제거 (데이터 삭제 주의!)
+   docker-compose down -v
+   ```
 
 ---
 
