@@ -106,9 +106,6 @@ Refer to the [README](../README.md) doc for preparation.
     - Both `CODESPACE_NAME` and `GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN` values should be the ones from GitHub Codespaces.
     ```
 
-### Containerize .NET Application
-
-
 ### Containerize JavaScript Frontend Application
 
 1. Make sure that you're using GitHub Copilot Agent Mode with the model of `Claude Sonnet 4` or `GPT-4.1`.

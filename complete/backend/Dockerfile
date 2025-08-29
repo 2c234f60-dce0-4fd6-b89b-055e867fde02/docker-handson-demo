@@ -1,6 +1,6 @@
 # Multi-stage build for Java Spring Boot application
-# Stage 1: Build stage with lightweight OpenJDK 17 Alpine
-FROM openjdk:17-jdk-alpine AS builder
+# Stage 1: Build stage with Amazon Corretto JDK 17 Alpine
+FROM amazoncorretto:17-alpine AS builder
 
 # Set working directory for build
 WORKDIR /workspace
@@ -24,8 +24,8 @@ COPY src ./src
 # Build the application
 RUN ./gradlew build --no-daemon -x test
 
-# Stage 2: Runtime stage with lightweight Alpine
-FROM openjdk:17-jre-alpine
+# Stage 2: Runtime stage with Amazon Corretto JRE 17 Alpine
+FROM amazoncorretto:17-alpine
 
 # Install required packages for Alpine
 RUN apk add --no-cache \
