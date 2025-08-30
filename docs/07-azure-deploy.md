@@ -29,8 +29,11 @@ rm -rf workshop/*
 cp -r complete/step-06/* workshop/
 cd workshop
 
-# 원클릭 배포 스크립트 실행
+# 원클릭 배포 스크립트 실행 (랜덤 접미사)
 ./deploy-to-azure.sh
+
+# 또는 특정 4자리 숫자로 배포
+./deploy-to-azure.sh 1234
 ```
 
 **이게 전부입니다!** 스크립트가 자동으로:
@@ -64,9 +67,10 @@ docker-compose ps
 스크립트는 다음 단계를 자동 실행합니다:
 
 1. **인프라 생성** - Azure 리소스 그룹, Container Registry
-2. **이미지 배포** - 로컬과 동일한 Docker 이미지를 클라우드로
-3. **서비스 실행** - Container Apps에서 컨테이너 실행
-4. **자동 스케일링** - 트래픽에 따른 자동 확장/축소
+2. **로컬 이미지 빌드** - 개발 환경과 동일한 Docker 이미지 생성
+3. **이미지 업로드** - 로컬 빌드한 이미지를 Azure Container Registry로 푸시
+4. **서비스 배포** - Container Apps에서 동일한 컨테이너 실행
+5. **자동 스케일링** - 트래픽에 따른 자동 확장/축소
 
 ## 💡 핵심 장점
 
@@ -97,8 +101,14 @@ az containerapp logs show --resource-group rg-socialapp --name socialapp-backend
 
 ```bash
 # 리소스 정리 (Azure 요금 절약)
-az group delete --name rg-socialapp --yes --no-wait
+# 배포 시 출력된 리소스 그룹 이름을 사용하세요
+az group delete --name rg-socialapp-XXXX --yes --no-wait
+
+# 예: ./deploy-to-azure.sh 1234로 배포했다면
+az group delete --name rg-socialapp-1234 --yes --no-wait
 ```
+
+> 💡 **팁**: 배포 스크립트 마지막에 출력되는 정리 명령을 복사해서 사용하세요!
 
 ---
 
@@ -113,9 +123,19 @@ az group delete --name rg-socialapp --yes --no-wait
 
 ## 🎥 데모 포인트
 
-1. **환경 일관성**: 로컬과 클라우드에서 동일한 Docker 이미지 실행
-2. **배포 단순성**: 한 번의 스크립트 실행으로 전체 인프라 구성
-3. **자동 스케일링**: 실시간 트래픽 증가에 따른 인스턴스 자동 확장
-4. **운영 효율성**: 코드 변경 없이 어떤 클라우드든 배포 가능
+### 💡 강조할 메시지
+**"개발자 머신에서 빌드한 바로 그 컨테이너가 프로덕션에서 실행됩니다"**
 
-이 데모를 통해 컨테이너가 어떻게 **개발과 운영의 간극을 해결**하고, **진정한 DevOps**를 가능하게 하는지 보여줄 수 있습니다.
+### 📋 데모 시연 순서
+1. **로컬 빌드 확인**: `docker images` 로컬 이미지 목록 보기
+2. **배포 실행**: `./deploy-to-azure.sh` 스크립트 실행하며 로그 설명
+3. **이미지 업로드 확인**: Azure Portal에서 Container Registry 이미지 확인
+4. **결과 비교**: 로컬과 Azure 애플리케이션 동시 실행하며 동일함 확인
+
+### 🎯 핵심 포인트
+- **환경 일관성**: "It works on my machine" 문제 해결
+- **배포 신뢰성**: 로컬 테스트와 동일한 환경 보장  
+- **운영 단순화**: 복잡한 서버 설정 없이 컨테이너만 실행
+- **플랫폼 독립성**: AWS, GCP, Azure 어디든 동일한 방식으로 배포
+
+이 데모로 컨테이너가 **개발과 운영의 완벽한 일치**를 보장하는 핵심 기술임을 보여줄 수 있습니다.
