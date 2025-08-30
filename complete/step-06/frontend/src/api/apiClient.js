@@ -1,12 +1,7 @@
 import axios from "axios";
 
-// Determine API base URL based on environment
+// API base URL - nginx에서 프록시 처리
 const getApiBaseUrl = () => {
-  // In Azure Container Apps, use environment variable
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-  // For local development, proxy through nginx
   return "/api";
 };
 
