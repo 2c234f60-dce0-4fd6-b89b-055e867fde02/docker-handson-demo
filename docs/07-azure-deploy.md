@@ -1,336 +1,121 @@
-# 07: Azure Deployment
+# 07: 클라우드 배포 - 어디서나 동일한 환경
 
-## Scenario
+## 🎯 핵심 메시지
 
-After successfully containerizing and scaling the social media application, Contoso wants to deploy their application to Azure for production use. They will use Azure Container Registry to store their Docker images and Azure Container Apps for hosting the scalable application.
+> **"로컬에서 실행하던 동일한 Docker 컨테이너가 클라우드에서도 똑같이 실행됩니다"**  
+> 컨테이너의 진정한 힘 - Write Once, Run Anywhere
 
-As a DevOps engineer, you will use Azure Developer CLI (`azd`) to streamline the deployment process to Azure.
+## 시나리오
 
-## Prerequisites
+지금까지 개발한 소셜 미디어 앱을 Azure 클라우드에 배포해봅시다.
+로컬 Docker Compose와 동일한 컨테이너를 클라우드에서 실행하여 **완전히 동일한 환경**을 보장합니다.
 
-- Completed steps 05 (Containerization) and 06 (Vertical Scaling)
-- Azure subscription (free tier available)
-- Docker Desktop installed and running
-- Azure Developer CLI (`azd`) installed
-- Azure CLI (`az`) installed
-- Refer to the [README](../README.md) doc for preparation
+## 🚀 원클릭 배포
 
-## Getting Started
-
-- [Install Required Tools](#install-required-tools)
-- [Prepare Azure Configuration](#prepare-azure-configuration)
-- [Create Azure Resources](#create-azure-resources)
-- [Build and Push Container Images](#build-and-push-container-images)
-- [Deploy to Azure Container Apps](#deploy-to-azure-container-apps)
-- [Configure Scaling and Monitoring](#configure-scaling-and-monitoring)
-
-### Install Required Tools
-
-1. First, ensure you have the required tools installed:
-
-   ```bash
-   # Install Azure Developer CLI (azd)
-   # On macOS
-   brew tap azure/azd && brew install azd
-   
-   # On Windows (PowerShell as Administrator)
-   powershell -ex AllSigned -c "Invoke-RestMethod 'https://aka.ms/install-azd.ps1' | Invoke-Expression"
-   
-   # On Linux
-   curl -fsSL https://aka.ms/install-azd.sh | bash
-   ```
-
-   ```bash
-   # Install Azure CLI (az)
-   # On macOS
-   brew install azure-cli
-   
-   # On Windows
-   winget install Microsoft.AzureCLI
-   
-   # On Linux (Ubuntu/Debian)
-   curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-   ```
-
-2. Login to Azure:
-
-   ```bash
-   # Login to Azure
-   az login
-   
-   # Set your subscription (if you have multiple)
-   az account set --subscription "your-subscription-id"
-   ```
-
-### Prepare Azure Configuration
-
-1. Initialize Azure Developer environment in the repository root:
-
-   ```bash
-   # From repository root
-   azd init
-   ```
-
-   When prompted:
-   - Select "Use code in the current directory"
-   - Enter project name: `socialapp`
-   - Choose your preferred Azure region (e.g., `eastus`, `westus2`)
-
-2. This creates several files:
-   - `azure.yaml` - Azure Developer configuration
-   - `.azure/` directory - Azure environment settings
-   - `infra/` directory - Infrastructure as Code templates
-
-### Create Azure Resources
-
-1. Create the required Azure infrastructure:
-
-   ```bash
-   # Provision Azure resources
-   azd provision
-   ```
-
-   This command will:
-   - Create a Resource Group
-   - Create an Azure Container Registry (ACR)
-   - Create Azure Container Apps Environment
-   - Set up networking and security configurations
-   - Configure managed identity for secure access
-
-2. Verify the resources were created:
-
-   ```bash
-   # List created resources
-   az resource list --resource-group rg-socialapp --output table
-   ```
-
-### Build and Push Container Images
-
-1. Build and tag your container images for Azure Container Registry:
-
-   ```bash
-   # Navigate to your containerized application
-   cd complete/step-06
-   
-   # Get your ACR login server
-   ACR_NAME=$(az acr list --resource-group rg-socialapp --query "[0].name" --output tsv)
-   ACR_LOGIN_SERVER=$(az acr list --resource-group rg-socialapp --query "[0].loginServer" --output tsv)
-   
-   echo "ACR Name: $ACR_NAME"
-   echo "ACR Login Server: $ACR_LOGIN_SERVER"
-   ```
-
-2. Login to Azure Container Registry:
-
-   ```bash
-   # Login to your ACR
-   az acr login --name $ACR_NAME
-   ```
-
-3. Build and push the backend image:
-
-   ```bash
-   # Build backend image with ACR tag
-   docker build -t $ACR_LOGIN_SERVER/socialapp-backend:latest ./backend
-   
-   # Push backend image to ACR
-   docker push $ACR_LOGIN_SERVER/socialapp-backend:latest
-   ```
-
-4. Build and push the frontend image:
-
-   ```bash
-   # Build frontend image with ACR tag
-   docker build -t $ACR_LOGIN_SERVER/socialapp-frontend:latest ./frontend
-   
-   # Push frontend image to ACR
-   docker push $ACR_LOGIN_SERVER/socialapp-frontend:latest
-   ```
-
-5. Verify images in ACR:
-
-   ```bash
-   # List images in ACR
-   az acr repository list --name $ACR_NAME --output table
-   az acr repository show-tags --name $ACR_NAME --repository socialapp-backend --output table
-   az acr repository show-tags --name $ACR_NAME --repository socialapp-frontend --output table
-   ```
-
-### Deploy to Azure Container Apps
-
-1. Create the backend container app:
-
-   ```bash
-   # Create backend container app
-   az containerapp create \
-     --resource-group rg-socialapp \
-     --name socialapp-backend \
-     --image $ACR_LOGIN_SERVER/socialapp-backend:latest \
-     --environment-name cae-socialapp \
-     --registry-server $ACR_LOGIN_SERVER \
-     --registry-identity system \
-     --target-port 8080 \
-     --ingress internal \
-     --min-replicas 1 \
-     --max-replicas 10 \
-     --cpu 1.0 \
-     --memory 2.0Gi \
-     --env-vars SPRING_PROFILES_ACTIVE=docker
-   ```
-
-2. Create the frontend container app:
-
-   ```bash
-   # Get backend FQDN
-   BACKEND_FQDN=$(az containerapp show --resource-group rg-socialapp --name socialapp-backend --query "properties.configuration.ingress.fqdn" --output tsv)
-   
-   # Create frontend container app
-   az containerapp create \
-     --resource-group rg-socialapp \
-     --name socialapp-frontend \
-     --image $ACR_LOGIN_SERVER/socialapp-frontend:latest \
-     --environment-name cae-socialapp \
-     --registry-server $ACR_LOGIN_SERVER \
-     --registry-identity system \
-     --target-port 80 \
-     --ingress external \
-     --min-replicas 1 \
-     --max-replicas 5 \
-     --cpu 0.5 \
-     --memory 1.0Gi
-   ```
-
-3. Get the application URL:
-
-   ```bash
-   # Get frontend URL
-   FRONTEND_URL=$(az containerapp show --resource-group rg-socialapp --name socialapp-frontend --query "properties.configuration.ingress.fqdn" --output tsv)
-   echo "Application URL: https://$FRONTEND_URL"
-   ```
-
-### Configure Scaling and Monitoring
-
-1. Configure horizontal scaling rules:
-
-   ```bash
-   # Configure backend scaling based on HTTP requests
-   az containerapp update \
-     --resource-group rg-socialapp \
-     --name socialapp-backend \
-     --scale-rule-name http-scale \
-     --scale-rule-type http \
-     --scale-rule-http-concurrency 100 \
-     --min-replicas 2 \
-     --max-replicas 20
-   ```
-
-2. Configure monitoring and logging:
-
-   ```bash
-   # Enable Container Insights
-   az containerapp logs show \
-     --resource-group rg-socialapp \
-     --name socialapp-backend \
-     --follow
-   ```
-
-3. Set up health probes:
-
-   ```bash
-   # Update backend with health probes
-   az containerapp update \
-     --resource-group rg-socialapp \
-     --name socialapp-backend \
-     --health-probe-type liveness \
-     --health-probe-path /actuator/health \
-     --health-probe-interval 30 \
-     --health-probe-timeout 10 \
-     --health-probe-threshold 3
-   ```
-
-### Test the Deployed Application
-
-1. Test the application functionality:
-
-   ```bash
-   # Open the application in your browser
-   echo "Opening application at: https://$FRONTEND_URL"
-   
-   # On macOS
-   open "https://$FRONTEND_URL"
-   
-   # On Windows
-   start "https://$FRONTEND_URL"
-   
-   # On Linux
-   xdg-open "https://$FRONTEND_URL"
-   ```
-
-2. Monitor application performance:
-
-   ```bash
-   # View application logs
-   az containerapp logs show --resource-group rg-socialapp --name socialapp-backend --follow
-   
-   # Check scaling status
-   az containerapp replica list --resource-group rg-socialapp --name socialapp-backend --output table
-   ```
-
-### Update and Redeploy
-
-1. For future updates, use the Azure Developer CLI:
-
-   ```bash
-   # Deploy updates to Azure
-   azd deploy
-   ```
-
-2. Or manually update container apps:
-
-   ```bash
-   # Update backend with new image
-   az containerapp update \
-     --resource-group rg-socialapp \
-     --name socialapp-backend \
-     --image $ACR_LOGIN_SERVER/socialapp-backend:v2
-   
-   # Update frontend with new image
-   az containerapp update \
-     --resource-group rg-socialapp \
-     --name socialapp-frontend \
-     --image $ACR_LOGIN_SERVER/socialapp-frontend:v2
-   ```
-
-### Clean Up Resources
-
-When you're done testing, clean up Azure resources to avoid charges:
+### 전제 조건
+- Azure 구독 (무료 계정 가능)
+- Azure CLI 설치 및 로그인 완료
 
 ```bash
-# Delete all resources
-azd down --force --purge
+# Azure 로그인 확인
+az account show
+```
 
-# Or manually delete the resource group
+### 자동화된 배포 실행
+
+```bash
+# Step-06 디렉터리 복사
+rm -rf workshop/*
+cp -r complete/step-06/* workshop/
+cd workshop
+
+# 원클릭 배포 스크립트 실행
+./deploy-to-azure.sh
+```
+
+**이게 전부입니다!** 스크립트가 자동으로:
+- ☁️ Azure Container Registry 생성
+- 🐳 Docker 이미지 빌드 및 업로드
+- 🚀 Container Apps 배포
+- ⚡ 자동 스케일링 설정
+- 🌐 공개 URL 제공
+
+## 🎬 데모 진행 순서
+
+### 1. 로컬 환경 확인
+```bash
+# 로컬에서 실행 중인 컨테이너 확인
+docker-compose ps
+```
+
+### 2. 배포 시작
+```bash
+# 자동화 스크립트 실행
+./deploy-to-azure.sh
+```
+
+### 3. 결과 확인
+- 📱 **로컬**: `http://localhost:3000`
+- ☁️ **Azure**: `https://your-app.azurecontainerapps.io`
+- ✨ **동일한 애플리케이션이 클라우드에서 실행!**
+
+## 🔄 배포 과정 (스크립트 내부)
+
+스크립트는 다음 단계를 자동 실행합니다:
+
+1. **인프라 생성** - Azure 리소스 그룹, Container Registry
+2. **이미지 배포** - 로컬과 동일한 Docker 이미지를 클라우드로
+3. **서비스 실행** - Container Apps에서 컨테이너 실행
+4. **자동 스케일링** - 트래픽에 따른 자동 확장/축소
+
+## 💡 핵심 장점
+
+| 특징 | 로컬 개발 | Azure 프로덕션 |
+|-----|----------|----------------|
+| **환경** | Docker 컨테이너 | 동일한 Docker 컨테이너 |
+| **코드** | 동일 | 동일 |
+| **설정** | docker-compose.yml | Container Apps |
+| **스케일링** | 수동 | 자동 (1-20 인스턴스) |
+| **가용성** | 단일 머신 | 고가용성 클러스터 |
+
+## 🧪 배포 테스트
+
+배포가 완료되면 다음을 확인해보세요:
+
+```bash
+# 애플리케이션 상태 확인
+az containerapp show --resource-group rg-socialapp --name socialapp-frontend --query "properties.provisioningState"
+
+# 실행 중인 인스턴스 수 확인
+az containerapp replica list --resource-group rg-socialapp --name socialapp-backend --output table
+
+# 애플리케이션 로그 확인
+az containerapp logs show --resource-group rg-socialapp --name socialapp-backend --follow
+```
+
+## 🧹 정리
+
+```bash
+# 리소스 정리 (Azure 요금 절약)
 az group delete --name rg-socialapp --yes --no-wait
 ```
 
 ---
 
-Congratulations! <� You've successfully deployed your containerized and scalable social media application to Azure using Azure Container Registry and Azure Container Apps with the Azure Developer CLI!
+## ✨ 달성한 것
 
-## Key Benefits Achieved
+🎯 **Write Once, Run Anywhere**: 동일한 컨테이너가 로컬과 클라우드에서 실행  
+🚀 **원클릭 배포**: 복잡한 클라우드 인프라를 한 번의 명령으로 구성  
+⚡ **자동 스케일링**: 트래픽에 따라 자동으로 서버 확장/축소  
+🛡️ **프로덕션 준비**: 로드 밸런서, SSL, 모니터링 자동 구성
 
-- **Cloud-Native Deployment**: Application runs on managed Azure services
-- **Auto-Scaling**: Container Apps automatically scale based on demand
-- **Secure Image Storage**: Container images stored in Azure Container Registry
-- **Production Ready**: Health checks, monitoring, and logging configured
-- **Easy Updates**: Simple redeployment process with `azd deploy`
-- **Cost Efficient**: Pay only for resources used, with automatic scaling
-- **High Availability**: Built-in redundancy and failover capabilities
+**이것이 바로 컨테이너 기술의 진정한 가치입니다!**
 
-## Next Steps
+## 🎥 데모 포인트
 
-- Set up CI/CD pipelines with GitHub Actions
-- Configure custom domains and SSL certificates
-- Implement Azure Application Insights for advanced monitoring
-- Set up Azure Key Vault for secrets management
-- Configure Azure Front Door for global load balancing
+1. **환경 일관성**: 로컬과 클라우드에서 동일한 Docker 이미지 실행
+2. **배포 단순성**: 한 번의 스크립트 실행으로 전체 인프라 구성
+3. **자동 스케일링**: 실시간 트래픽 증가에 따른 인스턴스 자동 확장
+4. **운영 효율성**: 코드 변경 없이 어떤 클라우드든 배포 가능
+
+이 데모를 통해 컨테이너가 어떻게 **개발과 운영의 간극을 해결**하고, **진정한 DevOps**를 가능하게 하는지 보여줄 수 있습니다.
