@@ -42,42 +42,78 @@ echo "🚀 Azure Container Apps 배포 시작..."
 RESOURCE_GROUP="rg-socialapp-$SUFFIX"
 LOCATION="Korea Central"
 ENVIRONMENT_NAME="cae-socialapp-$SUFFIX"
-ACR_NAME="acrsocialapp$SUFFIX"
+# ACR 이름은 전역적으로 고유해야 하므로 타임스탬프 추가
+TIMESTAMP=$(date +%Y%m%d%H%M)
+ACR_NAME="acrsocial${SUFFIX}${TIMESTAMP}"
 
 echo "📋 리소스 그룹 생성: $RESOURCE_GROUP"
 az group create --name $RESOURCE_GROUP --location "$LOCATION" --output none
 
 echo "📦 Azure Container Registry 생성: $ACR_NAME"
-az acr create --resource-group $RESOURCE_GROUP --name $ACR_NAME --sku Basic --output none
+# ACR 생성 시도
+if ! az acr create --resource-group $RESOURCE_GROUP --name $ACR_NAME --sku Basic --output none; then
+    echo "❌ ACR 생성 실패. 다른 이름으로 시도합니다."
+    # 더 고유한 이름으로 재시도
+    ACR_NAME="acrsocial${RANDOM}${SUFFIX}"
+    echo "📦 다른 이름으로 ACR 재생성: $ACR_NAME"
+    az acr create --resource-group $RESOURCE_GROUP --name $ACR_NAME --sku Basic --output none
+fi
+
+# ACR 로그인 서버 확인
 ACR_LOGIN_SERVER=$(az acr show --resource-group $RESOURCE_GROUP --name $ACR_NAME --query loginServer --output tsv)
+echo "✅ ACR 생성 완료: $ACR_LOGIN_SERVER"
 
 echo "🔐 ACR 로그인"
-az acr login --name $ACR_NAME
+if ! az acr login --name $ACR_NAME; then
+    echo "❌ ACR 로그인 실패!"
+    exit 1
+fi
+
+echo "🔑 ACR 관리자 계정 활성화"
+az acr update --name $ACR_NAME --admin-enabled true --output none
+
+# ACR이 정상적으로 작동하는지 확인
+echo "🔍 ACR 상태 확인"
+az acr show --name $ACR_NAME --query "provisioningState" --output tsv
 
 echo "🏗️  Container Apps Environment 생성: $ENVIRONMENT_NAME"
 az containerapp env create --name $ENVIRONMENT_NAME --resource-group $RESOURCE_GROUP --location "$LOCATION" --output none
 
-echo "🐳 로컬에서 Docker 이미지 빌드..."
-# 백엔드 이미지 - 먼저 로컬 태그로 빌드
-echo "  - 백엔드 이미지 빌드 (로컬)"
-docker build -t socialapp-backend:latest ./backend
+echo "🐳 로컬에서 Docker 이미지 빌드 (AMD64 아키텍처)..."
+# 백엔드 이미지 - AMD64 플랫폼으로 빌드 (Azure 호환)
+echo "  - 백엔드 이미지 빌드 (AMD64)"
+docker build --platform linux/amd64 -t socialapp-backend:latest ./backend
 
-# 프론트엔드 이미지 - 먼저 로컬 태그로 빌드  
-echo "  - 프론트엔드 이미지 빌드 (로컬)"
-docker build -t socialapp-frontend:latest ./frontend
+# 프론트엔드 이미지 - AMD64 플랫폼으로 빌드 (Azure 호환)
+echo "  - 프론트엔드 이미지 빌드 (AMD64)"
+docker build --platform linux/amd64 -t socialapp-frontend:latest ./frontend
 
 echo "📤 동일한 이미지를 Azure Container Registry로 푸시..."
 # 백엔드 이미지를 ACR 태그로 다시 태그하고 푸시
 echo "  - 백엔드 이미지 태그 및 푸시"
 docker tag socialapp-backend:latest $ACR_LOGIN_SERVER/socialapp-backend:latest
-docker push $ACR_LOGIN_SERVER/socialapp-backend:latest
+if ! docker push $ACR_LOGIN_SERVER/socialapp-backend:latest; then
+    echo "❌ 백엔드 이미지 푸시 실패!"
+    exit 1
+fi
 
 # 프론트엔드 이미지를 ACR 태그로 다시 태그하고 푸시
 echo "  - 프론트엔드 이미지 태그 및 푸시"
 docker tag socialapp-frontend:latest $ACR_LOGIN_SERVER/socialapp-frontend:latest
-docker push $ACR_LOGIN_SERVER/socialapp-frontend:latest
+if ! docker push $ACR_LOGIN_SERVER/socialapp-frontend:latest; then
+    echo "❌ 프론트엔드 이미지 푸시 실패!"
+    exit 1
+fi
+
+# 푸시된 이미지 확인
+echo "✅ 이미지 푸시 완료. ACR에서 확인 중..."
+az acr repository list --name $ACR_NAME --output table
 
 echo "✅ 로컬 빌드 완료! 동일한 이미지가 이제 Azure에서 실행됩니다."
+
+echo "🔑 ACR 자격 증명 가져오기"
+ACR_USERNAME=$(az acr credential show --resource-group $RESOURCE_GROUP --name $ACR_NAME --query username --output tsv)
+ACR_PASSWORD=$(az acr credential show --resource-group $RESOURCE_GROUP --name $ACR_NAME --query passwords[0].value --output tsv)
 
 echo "☁️  Container Apps 배포..."
 # 백엔드 Container App 배포
@@ -88,7 +124,8 @@ az containerapp create \
   --image $ACR_LOGIN_SERVER/socialapp-backend:latest \
   --environment $ENVIRONMENT_NAME \
   --registry-server $ACR_LOGIN_SERVER \
-  --registry-identity system \
+  --registry-username $ACR_USERNAME \
+  --registry-password $ACR_PASSWORD \
   --target-port 8080 \
   --ingress internal \
   --min-replicas 1 \
@@ -109,7 +146,8 @@ az containerapp create \
   --image $ACR_LOGIN_SERVER/socialapp-frontend:latest \
   --environment $ENVIRONMENT_NAME \
   --registry-server $ACR_LOGIN_SERVER \
-  --registry-identity system \
+  --registry-username $ACR_USERNAME \
+  --registry-password $ACR_PASSWORD \
   --target-port 80 \
   --ingress external \
   --min-replicas 1 \
@@ -134,9 +172,9 @@ az containerapp update \
   --name socialapp-backend \
   --scale-rule-name http-scale \
   --scale-rule-type http \
-  --scale-rule-http-concurrency 100 \
+  --scale-rule-http-concurrency 2 \
   --min-replicas 2 \
-  --max-replicas 20 \
+  --max-replicas 4 \
   --output none
 
 echo ""

@@ -1,7 +1,17 @@
 import axios from "axios";
 
+// Determine API base URL based on environment
+const getApiBaseUrl = () => {
+  // In Azure Container Apps, use environment variable
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  // For local development, proxy through nginx
+  return "/api";
+};
+
 const apiClient = axios.create({
-  baseURL: "/api",
+  baseURL: getApiBaseUrl(),
   headers: {
     "Content-Type": "application/json",
   },
