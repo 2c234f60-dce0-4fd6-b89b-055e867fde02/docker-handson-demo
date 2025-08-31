@@ -154,7 +154,7 @@ az containerapp create \
   --max-replicas 5 \
   --cpu 0.5 \
   --memory 1.0Gi \
-  --env-vars VITE_API_URL=https://$BACKEND_FQDN \
+  --env-vars VITE_API_URL=https://$BACKEND_FQDN:8080 \
   --output none
 
 # 애플리케이션 URL 가져오기
@@ -164,7 +164,7 @@ echo ""
 echo "✅ 배포 완료!"
 echo ""
 echo "🌐 애플리케이션 URL: https://$FRONTEND_URL"
-echo "📊 백엔드 API: https://$BACKEND_FQDN"
+echo "📊 백엔드 API: https://$BACKEND_FQDN:8080"
 echo ""
 echo "🔄 스케일링 설정 적용 중..."
 az containerapp update \
