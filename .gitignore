@@ -682,6 +682,8 @@ FodyWeavers.xsd
 
 # GitHub Copilot custom instructions
 .github/copilot-instructions.md
+.github/chatmodes
+.github/prompts
 
 # Local History for Visual Studio Code
 .history/
