@@ -27,7 +27,9 @@ Contoso는 다양한 아웃도어 활동용 제품을 판매하는 회사입니�
 
    ```bash
    # 저장소 루트에서
-   cp -r complete/step-00 workshop
+   rm -rf workshop/*
+   cp -r complete/step-00/* workshop
+   cd workshop
    ```
 
    이는 GitHub Copilot을 사용하여 컨테이너화로 향상시킬 새 디렉터리 구조를 생성합니다.
@@ -86,13 +88,10 @@ Contoso는 다양한 아웃도어 활동용 제품을 판매하는 회사입니�
     - Java 앱은 `workshop/backend`에 위치해 있습니다.
     - 작업 디렉터리는 저장소 루트입니다.
     - `workshop/backend` 디렉터리에 Dockerfile을 생성하세요.
-    - 빌드 단계에서는 Amazon Corretto JDK 17 Alpine을 사용하세요.
-    - 런타임 단계에서는 Amazon Corretto JRE 17 Alpine을 사용하세요.
-    - 멀티 스텝 빌드 접근 방식을 사용하세요.
-    - 컨테이너 이미지의 대상 포트 번호로 `8080`을 사용하세요.
-    - 컨테이너 이미지에 SQLite 데이터베이스 파일인 `sns_api.db`를 생성하세요. 호스트에서 파일을 복사하지는 마세요.
-    - Spring Boot Actuator 엔드포인트를 사용하여 상태 확인을 추가하세요.
-    - 보안을 위해 비root 사용자로 실행하세요.
+    - Amazon Corretto JDK 17 Alpine를 사용합니다.
+    - 백엔드 서비스포트를 호스트로 연결해주세요.
+    - 백엔드 디렉토리 안에 sqlite `sns_api.db` 파일이 있습니다. 호스트에서 해당 파일을 복사하지 말고 컨테이너 내부에서 새로 만드세요.
+    - 보안을 고려해서 사용자 설정 등을 구성하세요.
     ```
 
 1. 변경 사항을 반영하려면 GitHub Copilot의 ![the keep button image](https://img.shields.io/badge/keep-blue) 버튼을 클릭하세요.
@@ -115,7 +114,7 @@ Contoso는 다양한 아웃도어 활동용 제품을 판매하는 회사입니�
     ```text
     방금 빌드한 컨테이너 이미지를 사용하여 컨테이너를 실행하고 앱이 제대로 실행되고 있는지 확인하세요.
     
-    - 호스트 포트 `8080`을 사용하여 컨테이너 포트 `8080`에 매핑하세요.
+    - 백엔드 서비스 포트와 동일한 것으로 호스트/컨테이너 포트를 연결합니다.
     - 상태 엔드포인트에 접근 가능한지 확인하세요.
     ```
 
