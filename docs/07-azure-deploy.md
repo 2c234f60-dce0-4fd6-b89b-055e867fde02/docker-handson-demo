@@ -26,7 +26,7 @@ az account show
 ```bash
 # Step-06 디렉터리 복사
 rm -rf workshop/*
-cp -r complete/step-06/* workshop/
+cp -r complete/step-07/* workshop/
 cd workshop
 
 # 원클릭 배포 스크립트 실행 (랜덤 접미사)
