@@ -37,8 +37,13 @@ RUN apk add --no-cache \
 # Create application user for security (Alpine style)
 RUN addgroup -S appuser && adduser -S appuser -G appuser
 
-# Set working directory
 WORKDIR /app
+
+# Self-signed SSL 인증서 생성 및 keystore.p12 준비
+RUN apk add --no-cache openssl
+RUN openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=localhost"
+RUN openssl pkcs12 -export -in cert.pem -inkey key.pem -out keystore.p12 -name socialapp -password pass:changeit
+RUN mv keystore.p12 /app/keystore.p12
 
 # Copy the built JAR from builder stage
 COPY --from=builder /workspace/build/libs/*.jar app.jar
