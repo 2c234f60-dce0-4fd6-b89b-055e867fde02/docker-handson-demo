@@ -127,7 +127,7 @@ az containerapp create \
   --registry-username $ACR_USERNAME \
   --registry-password $ACR_PASSWORD \
   --target-port 8080 \
-  --ingress internal \
+  --ingress external \
   --min-replicas 1 \
   --max-replicas 10 \
   --cpu 1.0 \
