@@ -1,0 +1,52 @@
+# build and scale multi-container application
+# use this: docker-compose -f docker-compose.yml up --build -d --scale backend=3
+
+services:
+  # Frontend: single instance, serves static files and proxies /api to scaled backends
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"             # host:container
+    depends_on:
+      - backend
+    networks:
+      - appnet
+    restart: unless-stopped
+    # If your frontend nginx already has a config, replace it with the provided nginx.conf
+    volumes:
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+  # Backend: scalable, stateless (each replica has its own SQLite file baked into the image)
+  # IMPORTANT: Do NOT set container_name here, or scaling will fail.
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      # Example for Spring Boot + SQLite path inside container image.
+      # Adjust to your app's actual configuration key.
+      - SPRING_DATASOURCE_URL=jdbc:sqlite:/app/data/app.db
+    # No ports published; reached via Docker DNS from frontend
+    networks:
+      - appnet
+    restart: unless-stopped
+
+  # Optional: If you truly need a single shared SQLite file (not recommended for writes),
+  # you could mount a named volume into ONE backend replica only. For the demo, prefer
+  # embedding the DB per replica (no volume) to avoid file-lock contention.
+  # db:
+  #   image: busybox
+  #   command: ["sh", "-c", "tail -f /dev/null"]
+  #   volumes:
+  #     - sqlite-data:/var/lib/sqlite
+  #   networks:
+  #     - appnet
+
+networks:
+  appnet:
+    driver: bridge
+
+volumes:
+  sqlite-data: {}
