@@ -4,6 +4,12 @@
 
 JavaScript 프론트엔드와 Java 백엔드를 사용하여 소셜 미디어 애플리케이션을 구축하면서 [GitHub Copilot](https://docs.github.com/copilot/about-github-copilot/what-is-github-copilot) 바이브 코딩을 사용해봅시다!
 
+> **Take Home Message:** 
+>
+> 어? 깃헙 코파일럿 있으니까 할만하네?🤔
+>
+> 
+
 ## 배경
 
 Contoso는 다양한 아웃도어 활동용 제품을 판매하는 회사입니다. Contoso의 마케팅 부서에서는 기존 및 잠재 고객에게 자사 제품을 홍보하기 위한 마이크로 소셜 미디어 웹사이트를 출시하고자 합니다. 첫 번째 MVP로, 그들은 현대적인 웹 기술을 사용하여 빠르게 웹사이트를 구축하고자 합니다. 애플리케이션은 JavaScript로 구축된 React 프론트엔드와 Java로 구축된 Spring Boot 백엔드로 구성됩니다.
