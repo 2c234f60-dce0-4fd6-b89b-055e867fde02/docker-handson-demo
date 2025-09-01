@@ -57,24 +57,29 @@ Contoso는 다양한 아웃도어 활동용 제품을 판매하는 회사입니�
    REPOSITORY_ROOT=$(git rev-parse --show-toplevel)
    ```
 
-   ```powershell
-   # PowerShell
-   $REPOSITORY_ROOT = git rev-parse --show-toplevel
-   ```
-
-1. 사용자 지침을 복사하세요.
+1. 사용자 지침을 복사하세요. 다음과 같이 구성됩니다.
+    - `custom-instructions`: 코파일럿의 시스템 프롬프트입니다. 컨테이너화 작업에 집중할 수 있도록 관련사항을 정리해두었습니다.
+    - `chatmodes`: 에이전트 챗모드를 커스텀합니다. 20년차 시니어 아키텍트부터, 코드 포맷 정리 전문가까지 원하는대로 설정할 수 있습니다. 우리는 이른바 '비스트모드'라는, 자율적으로 작업을 정리하고 끝까지 잘 수행하는 모드로 설정합니다.
+    - `prompts`: 채팅창에서 `/`를 통해 호출할 수 있는 프롬프트 프리셋을 구성합니다. 우리는 `부스트`라는 프롬프트를 개선하는 프롬프트를 설정합니다.
 
     ```bash
-    # bash/zsh
     cp -r $REPOSITORY_ROOT/docs/custom-instructions/containerization/. \
           $REPOSITORY_ROOT/.github/
     ```
 
-    ```powershell
-    # PowerShell
-    Copy-Item -Path $REPOSITORY_ROOT/docs/custom-instructions/containerization/* `
-              -Destination $REPOSITORY_ROOT/.github/ -Recurse -Force
+1. MCP 설정을 복사하세요. 다음 MCP가 추가됩니다.
+    - `github`: 깃헙 코드읽기, 이슈/PR 생성 등의 작업을 수행할 수 있습니다.
+    - `awesome-copilot`: 깃헙 코파일럿 프롬프트 베스트 사례들을 조회해올 수 있습니다.
+    - `context7`: 최신 API 문서들을 읽을 수 있습니다.
+    - `microsoft.docs.mcp`: MS 문서들을 읽을 수 있습니다.
+    - `sequentialthinking`: 이른바 'reasoning'이라는 CoT 추론을 돕습니다.
+
     ```
+    cp -r $REPOSITORY_ROOT/docs/mcp/containerization/. \
+          $REPOSITORY_ROOT/.vscode/
+    ```
+
+
 
 ### Java 백엔드 애플리케이션 컨테이너화
 
